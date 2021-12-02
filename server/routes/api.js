@@ -10,12 +10,29 @@ mongoose.connect('mongodb://localhost/expensesDB', { useNewUrlParser: true })
 
 // ********************************************************************************************************
 router.get('/expenses', function(req, res) {
+    let d1 = req.query.d1
+    let d2 = req.query.d2
     if(!d1 && !d2) {
         Expense.find({}, function(err, expenses) {
             console.log(expenses)
             res.send(expenses)
         }).sort({date: -1})
     }
+    else{
+        const date2 = d2 ? moment(d2).format("LLLL") : moment(new Date()).format("LLLL")
+        console.log(date2)
+        const date1 = moment(d1).format("LLLL")
+        Expense.aggregate([
+            {
+                $match: {
+                    date: { $gte: new Date(date1), $lt: new Date(date2) }
+                },
+            },
+        ], function(err, expenses) {
+            console.log(expenses)
+            res.send(expenses)
+        })
+    }  
 })
 // ********************************************************************************************************
 router.post('/expense', function(req, res) {
